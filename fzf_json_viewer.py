@@ -18,7 +18,7 @@ def get_key_list(keys):
 
 
 def get_preview(target_json, script_dir=dirname(realpath(__file__))):
-    return f"python {script_dir}/preview.py {target_json} {{+}}"
+    return f"python {script_dir}/preview.py {target_json} {{+}} | cat -n"
 
 
 def execute_fzf(keys, target_json):
