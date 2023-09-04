@@ -23,13 +23,13 @@ def test_collect_keys(j, expected):
 
 
 @pytest.mark.parametrize(
-    "file,expected",
+    "file,script_dir,expected",
     [
-        ("test.json", "python preview.py test.json {+}"),
+        ("test.json", ".", "python ./preview.py test.json {+}"),
     ],
 )
-def test_get_preview(file, expected):
-    response = fzf_json_viewer.get_preview(file)
+def test_get_preview(file, script_dir, expected):
+    response = fzf_json_viewer.get_preview(file, script_dir=script_dir)
     assert response == expected
 
 

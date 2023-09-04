@@ -2,6 +2,7 @@
 import json
 import subprocess
 import sys
+from os.path import dirname, realpath
 from subprocess import PIPE
 
 
@@ -16,11 +17,8 @@ def get_key_list(keys):
     return "\n".join(lines)
 
 
-def get_preview(target_json):
-    # return f"echo \"cat {target_json} | jq -c {{+}}\""
-    # return f"cat {target_json} | jq -c {{+}}"
-    # return f"echo \"python preview.py {target_json} {{+}}\""
-    return f"python preview.py {target_json} {{+}}"
+def get_preview(target_json, script_dir=dirname(realpath(__file__))):
+    return f"python {script_dir}/preview.py {target_json} {{+}}"
 
 
 def execute_fzf(keys, target_json):
@@ -33,7 +31,7 @@ def execute_fzf(keys, target_json):
         "--preview",
         preview,
         "--preview-window",
-        "down",
+        "down:70%",
     ]
     proc = subprocess.run(cmd, input=key_list, stdout=PIPE, text=True)
     print(proc.stdout)
@@ -52,7 +50,6 @@ def collect_keys(json, prefix=None):
                 # If the first item is a dictionary, recurse with an updated prefix.
                 keys.extend(collect_keys(value[0], prefix=key_with_prefix + ["[]"]))
     return keys
-    # return [["top"], ["top", "[]", "key1"], ["top", "[]", "key2"]]
 
 
 def main(args):
