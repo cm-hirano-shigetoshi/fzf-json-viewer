@@ -32,6 +32,10 @@ def execute_fzf(keys, target_json):
         preview,
         "--preview-window",
         "down:70%",
+        "--bind",
+        "ctrl-l:deselect-all",
+        "--bind",
+        "alt-l:deselect-all",
     ]
     proc = subprocess.run(cmd, input=key_list, stdout=PIPE, text=True)
     print(proc.stdout)
