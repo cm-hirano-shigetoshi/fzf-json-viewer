@@ -5,6 +5,8 @@ import sys
 from os.path import dirname, realpath
 from subprocess import PIPE
 
+import internal_server
+
 
 def serialize(elems):
     return "." + "|.".join(elems)
@@ -17,13 +19,13 @@ def get_key_list(keys):
     return "\n".join(lines)
 
 
-def get_preview(target_json, script_dir=dirname(realpath(__file__))):
-    return f"python {script_dir}/preview.py {target_json} {{+}} | cat -n"
+def get_preview(port, script_dir=dirname(realpath(__file__))):
+    return f"python {script_dir}/preview.py {port} {{+}} | cat -n"
 
 
-def execute_fzf(keys, target_json):
+def execute_fzf(keys, port):
     key_list = get_key_list(keys)
-    preview = get_preview(target_json)
+    preview = get_preview(port)
     cmd = [
         "fzf",
         "--multi",
@@ -57,10 +59,10 @@ def collect_keys(json, prefix=None):
 
 
 def main(args):
-    target_json = args[1]
-    with open(target_json) as f:
-        keys = collect_keys(json.load(f))
-        execute_fzf(keys, target_json)
+    input_json = json.loads(sys.stdin.read())
+    keys = collect_keys(input_json)
+    port = internal_server.start_server(input_json)
+    execute_fzf(keys, port)
 
 
 if __name__ == "__main__":

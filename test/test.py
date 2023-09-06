@@ -25,7 +25,7 @@ def test_collect_keys(j, expected):
 @pytest.mark.parametrize(
     "file,script_dir,expected",
     [
-        ("test.json", ".", "python ./preview.py test.json {+}"),
+        ("test.json", ".", "python ./preview.py test.json {+} | cat -n"),
     ],
 )
 def test_get_preview(file, script_dir, expected):

@@ -2,6 +2,7 @@ import json
 import subprocess
 import sys
 from subprocess import PIPE
+from urllib.request import urlopen
 
 
 def common_prefix_length(args):
@@ -34,23 +35,23 @@ def make_query(pos, args):
     return jq_command
 
 
-def main(target_json, args):
-    with open(target_json) as f:
-        j = json.load(f)
-        if len(args) == 1:
-            cmd = ["jq", "-Cc", args[0]]
-            proc = subprocess.run(cmd, input=json.dumps(j), stdout=PIPE, text=True)
-            print(proc.stdout.strip())
-        else:
-            arg_list = [x.split("|") for x in args]
-            pos = common_prefix_length(arg_list)
-            jq_command = make_query(pos, arg_list)
+def main(port, args):
+    response_text = urlopen(f"http://localhost:{port}").read().decode()
+    j = json.loads(response_text)
+    if len(args) == 1:
+        cmd = ["jq", "-Cc", args[0]]
+        proc = subprocess.run(cmd, input=json.dumps(j), stdout=PIPE, text=True)
+        print(proc.stdout.strip())
+    else:
+        arg_list = [x.split("|") for x in args]
+        pos = common_prefix_length(arg_list)
+        jq_command = make_query(pos, arg_list)
 
-            cmd = ["jq", "-Cc", f"{jq_command}"]
-            proc = subprocess.run(cmd, input=json.dumps(j), stdout=PIPE, text=True)
-            print(proc.stdout.strip())
+        cmd = ["jq", "-Cc", f"{jq_command}"]
+        proc = subprocess.run(cmd, input=json.dumps(j), stdout=PIPE, text=True)
+        print(proc.stdout.strip())
 
 
 if __name__ == "__main__":
-    target_json = sys.argv[1]
-    main(target_json, sys.argv[2:])
+    port = sys.argv[1]
+    main(port, sys.argv[2:])
