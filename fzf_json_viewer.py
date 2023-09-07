@@ -6,6 +6,7 @@ from os.path import dirname, realpath
 from subprocess import PIPE
 
 import internal_server
+import preview
 
 
 def serialize(elems):
@@ -25,22 +26,25 @@ def get_preview(port, script_dir=dirname(realpath(__file__))):
 
 def execute_fzf(keys, port):
     key_list = get_key_list(keys)
-    preview = get_preview(port)
+    preview_cmd = get_preview(port)
     cmd = [
         "fzf",
         "--multi",
         "--reverse",
         "--preview",
-        preview,
+        preview_cmd,
         "--preview-window",
         "down:70%",
         "--bind",
         "ctrl-l:deselect-all",
         "--bind",
         "alt-l:deselect-all",
+        "--bind",
+        f'alt-f:execute-silent(curl "localhost:{port}?mode=filter")',
     ]
     proc = subprocess.run(cmd, input=key_list, stdout=PIPE, text=True)
-    print(proc.stdout)
+    args = proc.stdout.rstrip().split("\n")
+    print(preview.get_preview_text(port, args))
 
 
 def collect_keys(json, prefix=None):

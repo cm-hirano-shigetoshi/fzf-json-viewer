@@ -35,21 +35,31 @@ def make_query(pos, args):
     return jq_command
 
 
-def main(port, args):
-    response_text = urlopen(f"http://localhost:{port}").read().decode()
+def get_preview_text(port, args, tty=False):
+    response_text = urlopen(f"http://localhost:{port}?get_input=json").read().decode()
     j = json.loads(response_text)
     if len(args) == 1:
-        cmd = ["jq", "-Cc", args[0]]
+        if tty:
+            cmd = ["jq", "-Cc", args[0]]
+        else:
+            cmd = ["jq", "-c", args[0]]
         proc = subprocess.run(cmd, input=json.dumps(j), stdout=PIPE, text=True)
-        print(proc.stdout.strip())
+        return proc.stdout.strip()
     else:
         arg_list = [x.split("|") for x in args]
         pos = common_prefix_length(arg_list)
         jq_command = make_query(pos, arg_list)
 
-        cmd = ["jq", "-Cc", f"{jq_command}"]
+        if tty:
+            cmd = ["jq", "-Cc", f"{jq_command}"]
+        else:
+            cmd = ["jq", "-c", f"{jq_command}"]
         proc = subprocess.run(cmd, input=json.dumps(j), stdout=PIPE, text=True)
-        print(proc.stdout.strip())
+        return proc.stdout.strip()
+
+
+def main(port, args):
+    print(get_preview_text(port, args, tty=True))
 
 
 if __name__ == "__main__":
