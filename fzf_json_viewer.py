@@ -43,12 +43,12 @@ def execute_fzf(keys, port, fzf_port):
         "--bind",
         "alt-l:deselect-all",
         "--bind",
-        f'alt-f:execute-silent(curl "localhost:{port}?filter=$(echo {{}} | nkf -WwMQ | tr = %)")',
-        # f'alt-f:execute-silent(curl "localhost:{port}?filter={{}}")',
+        f'alt-f:execute-silent(curl "localhost:{port}?filter={{}}")',
     ]
     proc = subprocess.run(cmd, input=key_list, stdout=PIPE, text=True)
     args = proc.stdout.rstrip().split("\n")
-    print(preview.get_selected_part(port, args))
+    input_json = preview.get_input_json(port)
+    print(preview.get_selected_part_text(input_json, args))
 
 
 def collect_keys(json, prefix=None):
@@ -78,8 +78,6 @@ def main(args):
     fzf_port = find_available_port()
     internal_server.set_fzf_port(fzf_port)
 
-    with open("/tmp/aaa", "a") as f:
-        print(f"server: {port} fzf: {fzf_port}", file=f)
     execute_fzf(keys, port, fzf_port)
 
 

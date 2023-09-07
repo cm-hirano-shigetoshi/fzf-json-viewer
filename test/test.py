@@ -2,6 +2,25 @@ import fzf_json_viewer
 import preview
 import pytest
 
+INPUT_JSON = {
+    "top": [
+        {
+            "key1": "value11",
+            "key2": "value21",
+            "key3": "value31",
+            "key4": "value41",
+            "key5": "value51",
+        },
+        {
+            "key1": "value12",
+            "key2": "value22",
+            "key3": "value32",
+            "key4": "value42",
+            "key5": "value52",
+        },
+    ]
+}
+
 
 @pytest.mark.parametrize(
     "j,expected",
@@ -25,7 +44,7 @@ def test_collect_keys(j, expected):
 @pytest.mark.parametrize(
     "file,script_dir,expected",
     [
-        ("test.json", ".", "python ./preview.py test.json {+} | cat -n"),
+        ("test.json", ".", "python ./preview.py selected test.json {+} | cat -n"),
     ],
 )
 def test_get_preview(file, script_dir, expected):
@@ -112,4 +131,65 @@ def test_make_query_2(pos, a, b, expected):
 )
 def test_make_query_3(pos, a, b, c, expected):
     response = preview.make_query(pos, [a, b, c])
+    assert response == expected
+
+
+@pytest.mark.parametrize(
+    "input_json,items,expected",
+    [
+        (
+            INPUT_JSON,
+            [".top|.[]|.key1"],
+            '"value11"\n"value12"',
+        ),
+        (
+            INPUT_JSON,
+            [".top|.[]|.key1", ".top|.[]|.key2"],
+            '["value11","value21"]\n["value12","value22"]',
+        ),
+    ],
+)
+def test_get_selected_part(input_json, items, expected):
+    response = preview.get_selected_part_text(input_json, items)
+    assert response == expected
+
+
+@pytest.mark.parametrize(
+    "selector,specified,expected",
+    [
+        (
+            ".top|.[]|.key1",
+            "value12",
+            '{top: [.top|.[]|select(.key1 == "value12")]}',
+        ),
+    ],
+)
+def test_get_filter_query(selector, specified, expected):
+    response = preview.get_filter_query_text(selector, specified)
+    assert response == expected
+
+
+@pytest.mark.parametrize(
+    "input_json,selector,specified,expected",
+    [
+        (
+            INPUT_JSON,
+            ".top|.[]|.key1",
+            "value12",
+            {
+                "top": [
+                    {
+                        "key1": "value12",
+                        "key2": "value22",
+                        "key3": "value32",
+                        "key4": "value42",
+                        "key5": "value52",
+                    },
+                ]
+            },
+        ),
+    ],
+)
+def test_get_filtered_json(input_json, selector, specified, expected):
+    response = preview.get_filtered_json(input_json, selector, specified)
     assert response == expected

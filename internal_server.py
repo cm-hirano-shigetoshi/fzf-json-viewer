@@ -31,12 +31,10 @@ def get_filtered_preview_command(selector, script_dir=dirname(realpath(__file__)
 
 
 def get_filter_mode(selector):
-    with open("/tmp/aaa", "a") as f:
-        print(f"=== A01 ==={selector}", file=f)
-        reload_cmd = f"curl \"http://localhost:{server_port}?get_input=json\" | jq -r '{selector}'"
-        print(reload_cmd, file=f)
-        preview = get_filtered_preview_command(selector)
-        print(preview, file=f)
+    reload_cmd = (
+        f"curl \"http://localhost:{server_port}?get_input=json\" | jq -r '{selector}'"
+    )
+    preview = get_filtered_preview_command(selector)
     return f"reload({reload_cmd})+change-preview({preview})+clear-query"
 
 
@@ -47,9 +45,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         if "set_fzf_port" in params:
             succeeded = set_fzf_port(int(params["set_fzf_port"][0]))
         elif "filter" in params:
-            with open("/tmp/aaa", "a") as f:
-                print(params["filter"][0], file=f)
-            selector = params["filter"][0]
+            selector = params["filter"][0][1:-1]
             command = get_filter_mode(selector)
             post_to_localhost(get_fzf_api_url(), data=command)
             return True
