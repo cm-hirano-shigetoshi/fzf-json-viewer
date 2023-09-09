@@ -3,9 +3,9 @@ import json
 import subprocess
 import sys
 from http.server import HTTPServer
-from os.path import dirname, realpath
 from subprocess import PIPE
 
+import fzf_options
 import internal_server
 import preview
 
@@ -21,33 +21,19 @@ def get_key_list(keys):
     return "\n".join(lines)
 
 
-def get_preview(port, script_dir=dirname(realpath(__file__))):
-    return f"python {script_dir}/preview.py selected {port} {{+}} | cat -n"
-
-
-def execute_fzf(keys, port, fzf_port):
+def execute_fzf(keys, fzf_port):
     key_list = get_key_list(keys)
-    preview_cmd = get_preview(port)
     cmd = [
         "fzf",
         "--listen",
         str(fzf_port),
-        "--multi",
-        "--reverse",
-        "--preview",
-        preview_cmd,
-        "--preview-window",
-        "down:70%",
-        "--bind",
-        "ctrl-l:deselect-all",
-        "--bind",
-        "alt-l:deselect-all",
-        "--bind",
-        f'alt-f:execute-silent(curl "localhost:{port}?filter={{}}")',
     ]
+    cmd += fzf_options.get_options("default")
+
     proc = subprocess.run(cmd, input=key_list, stdout=PIPE, text=True)
     args = proc.stdout.rstrip().split("\n")
-    input_json = preview.get_input_json(port)
+
+    input_json = internal_server.get_input_json_from_memory()
     print(preview.get_selected_part_text(input_json, args))
 
 
@@ -74,11 +60,14 @@ def find_available_port():
 def main(args):
     input_json = json.loads(sys.stdin.read())
     keys = collect_keys(input_json)
-    port = internal_server.start_server(input_json)
+
+    server_port = internal_server.start_server(input_json)
+    fzf_options.set_server_port(server_port)
+
     fzf_port = find_available_port()
     internal_server.set_fzf_port(fzf_port)
 
-    execute_fzf(keys, port, fzf_port)
+    execute_fzf(keys, fzf_port)
 
 
 if __name__ == "__main__":

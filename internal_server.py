@@ -3,9 +3,10 @@ import json
 import threading
 import urllib.parse
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from os.path import dirname, realpath
 
 import requests
+
+import fzf_options
 
 server_port = None
 fzf_port = None
@@ -26,16 +27,8 @@ def post_to_localhost(*args, **kwargs):
     requests.post(*args, **kwargs, proxies={"http": None})
 
 
-def get_filtered_preview_command(selector, script_dir=dirname(realpath(__file__))):
-    return f"python {script_dir}/preview.py filtered {server_port} '{selector}' '{{}}'"
-
-
-def get_filter_mode(selector):
-    reload_cmd = (
-        f"curl \"http://localhost:{server_port}?get_input=json\" | jq -r '{selector}'"
-    )
-    preview = get_filtered_preview_command(selector)
-    return f"reload({reload_cmd})+change-preview({preview})+clear-query"
+def get_input_json_from_memory():
+    return input_json
 
 
 class RequestHandler(BaseHTTPRequestHandler):
@@ -46,7 +39,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             succeeded = set_fzf_port(int(params["set_fzf_port"][0]))
         elif "filter" in params:
             selector = params["filter"][0][1:-1]
-            command = get_filter_mode(selector)
+            command = fzf_options.get_fzf_options_diff(selector)
             post_to_localhost(get_fzf_api_url(), data=command)
             return True
         elif "get_input" in params:

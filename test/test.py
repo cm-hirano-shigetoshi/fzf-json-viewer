@@ -1,4 +1,5 @@
 import fzf_json_viewer
+import fzf_options
 import preview
 import pytest
 
@@ -42,13 +43,13 @@ def test_collect_keys(j, expected):
 
 
 @pytest.mark.parametrize(
-    "file,script_dir,expected",
+    "script_dir,port,expected",
     [
-        ("test.json", ".", "python ./preview.py selected test.json {+} | cat -n"),
+        (".", 12345, "python ./preview.py selected 12345 {+} | cat -n"),
     ],
 )
-def test_get_preview(file, script_dir, expected):
-    response = fzf_json_viewer.get_preview(file, script_dir=script_dir)
+def test_get_preview(script_dir, port, expected):
+    response = fzf_options.get_preview(script_dir=script_dir, port=port)
     assert response == expected
 
 

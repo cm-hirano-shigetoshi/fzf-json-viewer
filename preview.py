@@ -2,12 +2,6 @@ import json
 import subprocess
 import sys
 from subprocess import PIPE
-from urllib.request import urlopen
-
-
-def get_input_json(port):
-    response_text = urlopen(f"http://localhost:{port}?get_input=json").read().decode()
-    return json.loads(response_text)
 
 
 def common_prefix_length(args):
@@ -82,8 +76,14 @@ def format_via_jq(d, tty=True, compact=False):
     return proc.stdout.rstrip()
 
 
+def get_input_json_from_server(port):
+    cmd = ["curl", f"http://localhost:{port}?get_input=json"]
+    proc = subprocess.run(cmd, stdout=PIPE, stderr=PIPE, text=True)
+    return json.loads(proc.stdout)
+
+
 def main(mode, port, args):
-    input_json = get_input_json(port)
+    input_json = get_input_json_from_server(port)
     if mode == "selected":
         print(format_via_jq(get_selected_part_text(input_json, args), compact=True))
     elif mode == "filtered":
