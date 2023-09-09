@@ -23,6 +23,8 @@ def get_options(mode):
         options = [
             "--multi",
             "--reverse",
+            "--prompt",
+            "DEFAULT> ",
             "--preview",
             get_preview(),
             "--preview-window",
@@ -43,4 +45,4 @@ def get_fzf_options_diff(selector):
         f"curl \"http://localhost:{server_port}?get_input=json\" | jq -r '{selector}'"
     )
     preview = get_filtered_preview_command(selector)
-    return f"reload({reload_cmd})+change-preview({preview})+clear-query"
+    return f"reload({reload_cmd})+change-prompt({selector}> )+change-preview({preview})+clear-query"
