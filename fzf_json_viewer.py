@@ -31,10 +31,7 @@ def execute_fzf(keys, fzf_port):
     cmd += fzf_options.get_options("default")
 
     proc = subprocess.run(cmd, input=key_list, stdout=PIPE, text=True)
-    args = proc.stdout.rstrip().split("\n")
-
-    input_json = internal_server.get_input_json_from_memory()
-    print(preview.get_selected_part_text(input_json, args))
+    return proc.stdout
 
 
 def collect_keys(json, prefix=None):
@@ -67,7 +64,12 @@ def main(args):
     fzf_port = find_available_port()
     internal_server.set_fzf_port(fzf_port)
 
-    execute_fzf(keys, fzf_port)
+    stdout = execute_fzf(keys, fzf_port)
+
+    if len(stdout.strip()) > 0:
+        args = stdout.rstrip().split("\n")
+        input_json = internal_server.get_input_json_from_memory()
+        print(preview.get_selected_part_text(input_json, args))
 
 
 if __name__ == "__main__":
