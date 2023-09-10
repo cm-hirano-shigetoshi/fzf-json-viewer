@@ -7,7 +7,6 @@ from subprocess import PIPE
 
 import fzf_options
 import internal_server
-import preview
 
 
 def serialize(elems):
@@ -21,14 +20,14 @@ def get_key_list(keys):
     return "\n".join(lines)
 
 
-def execute_fzf(keys, fzf_port):
+def execute_fzf(keys, server_port, fzf_port):
     key_list = get_key_list(keys)
     cmd = [
         "fzf",
         "--listen",
         str(fzf_port),
     ]
-    cmd += fzf_options.get_options("default")
+    cmd += fzf_options.get_default_mode_options(server_port)
 
     proc = subprocess.run(cmd, input=key_list, stdout=PIPE, text=True)
     return proc.stdout
@@ -59,17 +58,15 @@ def main(args):
     keys = collect_keys(input_json)
 
     server_port = internal_server.start_server(input_json)
-    fzf_options.set_server_port(server_port)
-
     fzf_port = find_available_port()
     internal_server.set_fzf_port(fzf_port)
 
-    stdout = execute_fzf(keys, fzf_port)
+    stdout = execute_fzf(keys, server_port, fzf_port)
 
     if len(stdout.strip()) > 0:
         args = stdout.rstrip().split("\n")
         input_json = internal_server.get_input_json_from_memory()
-        print(preview.get_selected_part_text(input_json, args))
+        print(fzf_options.get_selected_part_text(input_json, args))
 
 
 if __name__ == "__main__":

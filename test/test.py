@@ -1,6 +1,5 @@
 import fzf_json_viewer
 import fzf_options
-import preview
 import pytest
 
 INPUT_JSON = {
@@ -49,7 +48,7 @@ def test_collect_keys(j, expected):
     ],
 )
 def test_get_preview(script_dir, port, expected):
-    response = fzf_options.get_preview(script_dir=script_dir, port=port)
+    response = fzf_options.get_preview(port, script_dir=script_dir)
     assert response == expected
 
 
@@ -76,7 +75,7 @@ def test_get_key_list(keys, expected):
     ],
 )
 def test_common_prefix_length_2(a, b, expected):
-    response = preview.common_prefix_length([a, b])
+    response = fzf_options.common_prefix_length([a, b])
     assert response == expected
 
 
@@ -92,7 +91,7 @@ def test_common_prefix_length_2(a, b, expected):
     ],
 )
 def test_common_prefix_length_3(a, b, c, expected):
-    response = preview.common_prefix_length([a, b, c])
+    response = fzf_options.common_prefix_length([a, b, c])
     assert response == expected
 
 
@@ -114,7 +113,7 @@ def test_common_prefix_length_3(a, b, c, expected):
     ],
 )
 def test_make_query_2(pos, a, b, expected):
-    response = preview.make_query(pos, [a, b])
+    response = fzf_options.make_query(pos, [a, b])
     assert response == expected
 
 
@@ -131,7 +130,7 @@ def test_make_query_2(pos, a, b, expected):
     ],
 )
 def test_make_query_3(pos, a, b, c, expected):
-    response = preview.make_query(pos, [a, b, c])
+    response = fzf_options.make_query(pos, [a, b, c])
     assert response == expected
 
 
@@ -151,7 +150,7 @@ def test_make_query_3(pos, a, b, c, expected):
     ],
 )
 def test_get_selected_part(input_json, items, expected):
-    response = preview.get_selected_part_text(input_json, items)
+    response = fzf_options.get_selected_part_text(input_json, items)
     assert response == expected
 
 
@@ -166,7 +165,7 @@ def test_get_selected_part(input_json, items, expected):
     ],
 )
 def test_get_filter_query(selector, specified, expected):
-    response = preview.get_filter_query_text(selector, specified)
+    response = fzf_options.get_filter_query_text(selector, specified)
     assert response == expected
 
 
@@ -192,5 +191,5 @@ def test_get_filter_query(selector, specified, expected):
     ],
 )
 def test_get_filtered_json(input_json, selector, specified, expected):
-    response = preview.get_filtered_json(input_json, selector, specified)
+    response = fzf_options.get_filtered_json(input_json, selector, specified)
     assert response == expected

@@ -8,9 +8,21 @@ import requests
 
 import fzf_options
 
+mode = "default"
+selector = None
 server_port = None
 fzf_port = None
 input_json = None
+
+
+def set_mode(m):
+    global mode
+    mode = m
+
+
+def set_selector(s):
+    global selector
+    selector = s
 
 
 def set_fzf_port(port):
@@ -38,9 +50,10 @@ class RequestHandler(BaseHTTPRequestHandler):
         if "set_fzf_port" in params:
             succeeded = set_fzf_port(int(params["set_fzf_port"][0]))
         elif "filter" in params:
-            selector = params["filter"][0][1:-1]
-            command = fzf_options.get_fzf_options_diff(selector)
+            set_selector(params["filter"][0][1:-1])
+            command = fzf_options.enter_filter_mode(selector, server_port)
             post_to_localhost(get_fzf_api_url(), data=command)
+            set_mode("filter")
             return True
         elif "get_input" in params:
             self.send_response(200)
