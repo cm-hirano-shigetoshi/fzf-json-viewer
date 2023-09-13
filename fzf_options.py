@@ -73,18 +73,16 @@ def make_query(pos, args):
 
 
 def get_selected_part_text(input_json, items):
+    arg_list = [x.split("|") for x in items]
     if len(items) == 1:
-        cmd = ["jq", items[0]]
-        proc = subprocess.run(cmd, input=json.dumps(input_json), stdout=PIPE, text=True)
-        return proc.stdout.rstrip()
+        pos = -1
     else:
-        arg_list = [x.split("|") for x in items]
         pos = common_prefix_length(arg_list)
-        jq_command = make_query(pos, arg_list)
+    jq_command = make_query(pos, arg_list)
 
-        cmd = ["jq", "-c", jq_command]
-        proc = subprocess.run(cmd, input=json.dumps(input_json), stdout=PIPE, text=True)
-        return proc.stdout.rstrip()
+    cmd = ["jq", "-c", jq_command]
+    proc = subprocess.run(cmd, input=json.dumps(input_json), stdout=PIPE, text=True)
+    return proc.stdout.rstrip()
 
 
 def get_filter_query_text(selector, specified):

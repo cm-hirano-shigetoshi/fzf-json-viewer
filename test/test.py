@@ -201,7 +201,7 @@ def test_make_query_3(pos, a, b, c, expected):
         (
             INPUT_JSON,
             [".top|.[]|.key1"],
-            '"value11"\n"value12"',
+            '["value11"]\n["value12"]',
         ),
         (
             INPUT_JSON,
