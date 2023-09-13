@@ -4,6 +4,44 @@ from os.path import dirname, realpath
 from subprocess import PIPE
 
 
+def get_select_condition_list(lines, selector, selected):
+    def make_query(line, selector, selected):
+        depth = len(selector.split("|"))
+        if len(line) < depth:
+            return line
+        else:
+            base = selector.split("|")[-1]
+            return (
+                line[: depth - 1]
+                + [f'select({base}=="{selected}")']
+                + line[depth - 1 :]
+            )
+
+    return [make_query(line, selector, selected) for line in lines]
+
+
+def collect_keys(json, prefix=None):
+    keys = []
+    for key, value in json.items():
+        key_with_prefix = prefix + [f".{key}"] if prefix else [f".{key}"]
+        keys.append(key_with_prefix)
+        if isinstance(value, dict):
+            keys.extend(collect_keys(value, key_with_prefix))
+        elif isinstance(value, list) and value:
+            # For lists, consider the first item alone as per the request.
+            if isinstance(value[0], dict):
+                # If the first item is a dictionary, recurse with an updated prefix.
+                keys.extend(collect_keys(value[0], prefix=key_with_prefix + [".[]"]))
+    return keys
+
+
+def get_key_list(keys):
+    lines = []
+    for elems in keys:
+        lines.append("|".join(elems))
+    return lines
+
+
 def common_prefix_length(args):
     min_length = 9999
     for i in range(len(args) - 1):
@@ -62,7 +100,7 @@ def get_filtered_json(input_json, selector, specified):
     return json.loads(proc.stdout)
 
 
-def get_preview(server_port, script_dir=dirname(realpath(__file__))):
+def get_preview(server_port, script_dir=dirname(realpath(__file__)), selector=None):
     cmd = f"python {script_dir}/preview.py selected {server_port} {{+}} | cat -n"
     return cmd
 
@@ -89,6 +127,8 @@ def get_default_mode_options(server_port):
         "alt-l:deselect-all",
         "--bind",
         f'alt-f:execute-silent(curl "localhost:{server_port}?filter={{}}")',
+        "--bind",
+        f'alt-a:execute-silent(curl "localhost:{server_port}?selected={{}}")',
     ]
     return options
 
@@ -107,14 +147,12 @@ def enter_filter_mode(selector, server_port):
     return "+".join(actions)
 
 
-def enter_default_mode(selector, server_port):
-    reload_cmd = (
-        f"curl \"http://localhost:{server_port}?get_input=json\" | jq -r '{selector}'"
-    )
-    preview = get_filtered_preview_command(selector, server_port)
+def enter_default_mode(selector, selected, server_port):
+    reload_cmd = f'curl "http://localhost:{server_port}?get_input=keys:{selected}"'
+    preview = get_preview(server_port, selector=selector)
     actions = [
         f"reload({reload_cmd})",
-        f"change-prompt({selector}> )",
+        "change-prompt(DEFAULT> )",
         f"change-preview({preview})",
         "clear-query",
     ]

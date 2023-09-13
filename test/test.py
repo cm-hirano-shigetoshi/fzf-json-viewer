@@ -1,4 +1,3 @@
-import fzf_json_viewer
 import fzf_options
 import pytest
 
@@ -23,6 +22,36 @@ INPUT_JSON = {
 
 
 @pytest.mark.parametrize(
+    "lines,selector,selected,expected",
+    [
+        (
+            [
+                [".top"],
+                [".top", ".[]", ".key1"],
+                [".top", ".[]", ".key2"],
+                [".top", ".[]", ".key3"],
+                [".top", ".[]", ".key4"],
+                [".top", ".[]", ".key5"],
+            ],
+            ".top|.[]|.key3",
+            "value32",
+            [
+                [".top"],
+                [".top", ".[]", 'select(.key3=="value32")', ".key1"],
+                [".top", ".[]", 'select(.key3=="value32")', ".key2"],
+                [".top", ".[]", 'select(.key3=="value32")', ".key3"],
+                [".top", ".[]", 'select(.key3=="value32")', ".key4"],
+                [".top", ".[]", 'select(.key3=="value32")', ".key5"],
+            ],
+        ),
+    ],
+)
+def test_get_select_condition_list(lines, selector, selected, expected):
+    response = fzf_options.get_select_condition_list(lines, selector, selected)
+    assert response == expected
+
+
+@pytest.mark.parametrize(
     "j,expected",
     [
         (
@@ -32,12 +61,40 @@ INPUT_JSON = {
                     {"key1": "value12", "key2": "value22"},
                 ]
             },
-            [["top"], ["top", "[]", "key1"], ["top", "[]", "key2"]],
+            [[".top"], [".top", ".[]", ".key1"], [".top", ".[]", ".key2"]],
+        ),
+        (
+            {
+                "top": [
+                    {
+                        "key1": "value11",
+                        "key2": "value21",
+                        "key3": "value31",
+                        "key4": "value41",
+                        "key5": "value51",
+                    },
+                    {
+                        "key1": "value12",
+                        "key2": "value22",
+                        "key3": "value32",
+                        "key4": "value42",
+                        "key5": "value52",
+                    },
+                ]
+            },
+            [
+                [".top"],
+                [".top", ".[]", ".key1"],
+                [".top", ".[]", ".key2"],
+                [".top", ".[]", ".key3"],
+                [".top", ".[]", ".key4"],
+                [".top", ".[]", ".key5"],
+            ],
         ),
     ],
 )
 def test_collect_keys(j, expected):
-    response = fzf_json_viewer.collect_keys(j)
+    response = fzf_options.collect_keys(j)
     assert response == expected
 
 
@@ -56,13 +113,17 @@ def test_get_preview(script_dir, port, expected):
     "keys,expected",
     [
         (
-            [["top"], ["top", "[]", "key1"], ["top", "[]", "key2"]],
-            ".top\n.top|.[]|.key1\n.top|.[]|.key2",
+            [[".top"], [".top", ".[]", ".key1"], [".top", ".[]", ".key2"]],
+            [".top", ".top|.[]|.key1", ".top|.[]|.key2"],
+        ),
+        (
+            [[".top", ".[]", 'select(.key3=="value32")', ".key3"]],
+            ['.top|.[]|select(.key3=="value32")|.key3'],
         ),
     ],
 )
 def test_get_key_list(keys, expected):
-    response = fzf_json_viewer.get_key_list(keys)
+    response = fzf_options.get_key_list(keys)
     assert response == expected
 
 
@@ -85,7 +146,7 @@ def test_common_prefix_length_2(a, b, expected):
         (
             [".top", ".[]", ".key1"],
             [".top", ".[]", ".key2"],
-            [".top", ".[]", ".key2", "[]", "hoge"],
+            [".top", ".[]", ".key2", ".[]", ".hoge"],
             2,
         ),
     ],

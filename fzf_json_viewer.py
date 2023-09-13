@@ -9,19 +9,8 @@ import fzf_options
 import internal_server
 
 
-def serialize(elems):
-    return "." + "|.".join(elems)
-
-
-def get_key_list(keys):
-    lines = []
-    for elems in keys:
-        lines.append(serialize(elems))
-    return "\n".join(lines)
-
-
 def execute_fzf(keys, server_port, fzf_port):
-    key_list = get_key_list(keys)
+    key_list = fzf_options.get_key_list(keys)
     cmd = [
         "fzf",
         "--listen",
@@ -29,23 +18,8 @@ def execute_fzf(keys, server_port, fzf_port):
     ]
     cmd += fzf_options.get_default_mode_options(server_port)
 
-    proc = subprocess.run(cmd, input=key_list, stdout=PIPE, text=True)
+    proc = subprocess.run(cmd, input="\n".join(key_list), stdout=PIPE, text=True)
     return proc.stdout
-
-
-def collect_keys(json, prefix=None):
-    keys = []
-    for key, value in json.items():
-        key_with_prefix = prefix + [key] if prefix else [key]
-        keys.append(key_with_prefix)
-        if isinstance(value, dict):
-            keys.extend(collect_keys(value, key_with_prefix))
-        elif isinstance(value, list) and value:
-            # For lists, consider the first item alone as per the request.
-            if isinstance(value[0], dict):
-                # If the first item is a dictionary, recurse with an updated prefix.
-                keys.extend(collect_keys(value[0], prefix=key_with_prefix + ["[]"]))
-    return keys
 
 
 def find_available_port():
@@ -55,7 +29,7 @@ def find_available_port():
 
 def main(args):
     input_json = json.loads(sys.stdin.read())
-    keys = collect_keys(input_json)
+    keys = fzf_options.collect_keys(input_json)
 
     server_port = internal_server.start_server(input_json)
     fzf_port = find_available_port()

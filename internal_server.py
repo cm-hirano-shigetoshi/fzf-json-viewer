@@ -55,12 +55,32 @@ class RequestHandler(BaseHTTPRequestHandler):
             post_to_localhost(get_fzf_api_url(), data=command)
             set_mode("filter")
             return True
+        elif "selected" in params:
+            selected = params["selected"][0][1:-1]
+            command = fzf_options.enter_default_mode(selector, selected, server_port)
+            post_to_localhost(get_fzf_api_url(), data=command)
+            set_mode("default")
+            return True
         elif "get_input" in params:
-            self.send_response(200)
-            self.send_header("Content-type", "text/html")
-            self.end_headers()
-            message = json.dumps(input_json)
-            self.wfile.write(bytes(message, "utf8"))
+            if params["get_input"][0] == "json":
+                self.send_response(200)
+                self.send_header("Content-type", "text/html")
+                self.end_headers()
+                message = json.dumps(input_json)
+                self.wfile.write(bytes(message, "utf8"))
+            elif params["get_input"][0].startswith("keys:"):
+                selected = params["get_input"][0][len("keys:") :]
+                self.send_response(200)
+                self.send_header("Content-type", "text/html")
+                self.end_headers()
+                message = "\n".join(
+                    fzf_options.get_key_list(
+                        fzf_options.get_select_condition_list(
+                            fzf_options.collect_keys(input_json), selector, selected
+                        )
+                    )
+                )
+                self.wfile.write(bytes(message, "utf8"))
             succeeded = False
         else:
             succeeded = False
