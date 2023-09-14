@@ -5,19 +5,40 @@ from subprocess import PIPE
 
 
 def get_select_condition_list(lines, selector, selected):
-    def make_query(line, selector, selected):
-        depth = len(selector.split("|"))
-        if len(line) < depth:
+    """
+    (
+        [
+            [".top"],
+            [".top", ".[]", ".id"],
+            [".top", ".[]", ".Tags", ".Name"],
+        ],
+        ".top|.[]|.Tags|.Name",
+        "hoge",
+        [
+            [".top"],
+            [".top", ".[]", 'select(.Tags.Name=="hoge")', ".id"],
+            [".top", ".[]", ".Tags", 'select(.Name=="hoge")', ".Name"],
+        ],
+    ),
+    """
+
+    def _rindex(ls, s):
+        return len(ls) - ls[::-1].index(s) - 1
+
+    def _make_query(line, selector, selected):
+        sp = selector.split("|")
+        selector_depth = sp.count(".[]")
+        if line.count(".[]") < selector_depth:
             return line
         else:
-            base = selector.split("|")[-1]
+            base = "".join(sp[_rindex(sp, ".[]") + 1 :])
             return (
-                line[: depth - 1]
+                line[: _rindex(line, ".[]") + 1]
                 + [f'select({base}=="{selected}")']
-                + line[depth - 1 :]
+                + line[_rindex(line, ".[]") + 1 :]
             )
 
-    return [make_query(line, selector, selected) for line in lines]
+    return [_make_query(line, selector, selected) for line in lines]
 
 
 def collect_keys(json, prefix=None):

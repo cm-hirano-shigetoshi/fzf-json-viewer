@@ -45,6 +45,20 @@ INPUT_JSON = {
                 [".top", ".[]", 'select(.key3=="value32")', ".key5"],
             ],
         ),
+        (
+            [
+                [".top"],
+                [".top", ".[]", ".id"],
+                [".top", ".[]", ".Tags", ".Name"],
+            ],
+            ".top|.[]|.Tags|.Name",
+            "hoge",
+            [
+                [".top"],
+                [".top", ".[]", 'select(.Tags.Name=="hoge")', ".id"],
+                [".top", ".[]", 'select(.Tags.Name=="hoge")', ".Tags", ".Name"],
+            ],
+        ),
     ],
 )
 def test_get_select_condition_list(lines, selector, selected, expected):
