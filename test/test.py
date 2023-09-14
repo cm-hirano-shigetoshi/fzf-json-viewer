@@ -1,3 +1,4 @@
+import convert_format
 import fzf_options
 import pytest
 
@@ -253,4 +254,42 @@ def test_get_filter_query(selector, specified, expected):
 )
 def test_get_filtered_json(input_json, selector, specified, expected):
     response = fzf_options.get_filtered_json(input_json, selector, specified)
+    assert response == expected
+
+
+@pytest.mark.parametrize(
+    "d,expected",
+    [
+        (
+            {
+                "top": [
+                    {
+                        "str": "str_value",
+                        "list": ["list_value"],
+                        "dict": {"dict_key": "dict_value"},
+                        "Tags": [
+                            {"Key": "Name1", "Value": "hoge1"},
+                            {"Key": "Name2", "Value": "hoge2"},
+                        ],
+                    }
+                ]
+            },
+            {
+                "top": [
+                    {
+                        "str": "str_value",
+                        "list": ["list_value"],
+                        "dict": {"dict_key": "dict_value"},
+                        "Tags": {
+                            "Name1": "hoge1",
+                            "Name2": "hoge2",
+                        },
+                    }
+                ]
+            },
+        ),
+    ],
+)
+def test_optimize_aws_tags(d, expected):
+    response = convert_format.optimize_aws_tags(d)
     assert response == expected

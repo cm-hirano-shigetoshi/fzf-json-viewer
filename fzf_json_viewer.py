@@ -1,10 +1,12 @@
 #!/usr/bin/env python
+import argparse
 import json
 import subprocess
 import sys
 from http.server import HTTPServer
 from subprocess import PIPE
 
+import convert_format
 import fzf_options
 import internal_server
 
@@ -27,8 +29,10 @@ def find_available_port():
     return httpd.server_port
 
 
-def main(args):
+def main(args, options):
     input_json = json.loads(sys.stdin.read())
+    if not options["no_aws_tags"]:
+        input_json = convert_format.optimize_aws_tags(input_json)
     keys = fzf_options.collect_keys(input_json)
 
     server_port = internal_server.start_server(input_json)
@@ -44,4 +48,7 @@ def main(args):
 
 
 if __name__ == "__main__":
-    main(sys.argv)
+    p = argparse.ArgumentParser()
+    p.add_argument("--no_aws_tags", action="store_true")
+    args = p.parse_args()
+    main(sys.argv, args.__dict__)
