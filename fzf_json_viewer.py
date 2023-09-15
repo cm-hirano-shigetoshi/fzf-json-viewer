@@ -31,6 +31,8 @@ def find_available_port():
 
 def main(args, options):
     input_json = json.loads(sys.stdin.read())
+    if isinstance(input_json, list):
+        input_json = {"_": input_json}
     if not options["no_aws_tags"]:
         input_json = convert_format.optimize_aws_tags(input_json)
     keys = fzf_options.collect_keys(input_json)
