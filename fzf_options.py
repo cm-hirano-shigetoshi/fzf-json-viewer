@@ -136,6 +136,7 @@ def get_default_mode_options(server_port):
         "--reverse",
         "--prompt",
         "DEFAULT> ",
+        "--keep-right",
         "--preview",
         get_preview(server_port),
         "--preview-window",
