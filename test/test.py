@@ -48,6 +48,26 @@ INPUT_JSON = {
         (
             [
                 [".top"],
+                [".top", ".[]", ".key1"],
+                [".top", ".[]", ".key2"],
+                [".top", ".[]", ".key3"],
+                [".top", ".[]", ".key4"],
+                [".top", ".[]", ".key5"],
+            ],
+            ".top|.[]|.key3",
+            "value32,value31",
+            [
+                [".top"],
+                [".top", ".[]", 'select(.key3=="value32"or.key3=="value31")', ".key1"],
+                [".top", ".[]", 'select(.key3=="value32"or.key3=="value31")', ".key2"],
+                [".top", ".[]", 'select(.key3=="value32"or.key3=="value31")', ".key3"],
+                [".top", ".[]", 'select(.key3=="value32"or.key3=="value31")', ".key4"],
+                [".top", ".[]", 'select(.key3=="value32"or.key3=="value31")', ".key5"],
+            ],
+        ),
+        (
+            [
+                [".top"],
                 [".top", ".[]", ".id"],
                 [".top", ".[]", ".Tags", ".Name"],
             ],

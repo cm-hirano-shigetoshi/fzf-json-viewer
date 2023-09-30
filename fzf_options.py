@@ -3,27 +3,18 @@ import subprocess
 from os.path import dirname, realpath
 from subprocess import PIPE
 
+SCRIPT_PATH = dirname(__file__)
+
 
 def get_select_condition_list(lines, selector, selected):
-    """
-    (
-        [
-            [".top"],
-            [".top", ".[]", ".id"],
-            [".top", ".[]", ".Tags", ".Name"],
-        ],
-        ".top|.[]|.Tags|.Name",
-        "hoge",
-        [
-            [".top"],
-            [".top", ".[]", 'select(.Tags.Name=="hoge")', ".id"],
-            [".top", ".[]", ".Tags", 'select(.Name=="hoge")', ".Name"],
-        ],
-    ),
-    """
-
     def _rindex(ls, s):
         return len(ls) - ls[::-1].index(s) - 1
+
+    def _make_select_condition(base, selected):
+        conditions = []
+        for s in selected.split(","):
+            conditions.append(f'{base}=="{s}"')
+        return [f'select({"or".join(conditions)})']
 
     def _make_query(line, selector, selected):
         sp = selector.split("|")
@@ -34,7 +25,7 @@ def get_select_condition_list(lines, selector, selected):
             base = "".join(sp[_rindex(sp, ".[]") + 1 :])
             return (
                 line[: _rindex(line, ".[]") + 1]
-                + [f'select({base}=="{selected}")']
+                + _make_select_condition(base, selected)
                 + line[_rindex(line, ".[]") + 1 :]
             )
 
@@ -148,7 +139,7 @@ def get_default_mode_options(server_port):
         "--bind",
         f'alt-f:execute-silent(curl "localhost:{server_port}?filter={{}}")',
         "--bind",
-        f'alt-a:execute-silent(curl "localhost:{server_port}?selected={{}}")',
+        f"alt-a:execute-silent(bash {SCRIPT_PATH}/curl_internal_server.sh selected {server_port} {{+}})",
     ]
     return options
 
