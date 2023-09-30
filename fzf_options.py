@@ -137,9 +137,7 @@ def get_default_mode_options(server_port):
         "--bind",
         "alt-l:deselect-all",
         "--bind",
-        f'alt-f:execute-silent(curl "localhost:{server_port}?filter={{}}")',
-        "--bind",
-        f"alt-a:execute-silent(bash {SCRIPT_PATH}/curl_internal_server.sh selected {server_port} {{+}})",
+        f"alt-f:execute-silent(bash {SCRIPT_PATH}/curl_internal_server.sh filter {server_port} {{+}})",
     ]
     return options
 

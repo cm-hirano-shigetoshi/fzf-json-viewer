@@ -50,17 +50,22 @@ class RequestHandler(BaseHTTPRequestHandler):
         if "set_fzf_port" in params:
             succeeded = set_fzf_port(int(params["set_fzf_port"][0]))
         elif "filter" in params:
-            set_selector(params["filter"][0][1:-1])
-            command = fzf_options.enter_filter_mode(selector, server_port)
-            post_to_localhost(get_fzf_api_url(), data=command)
-            set_mode("filter")
-            return True
-        elif "selected" in params:
-            selected = params["selected"][0][1:-1]
-            command = fzf_options.enter_default_mode(selector, selected, server_port)
-            post_to_localhost(get_fzf_api_url(), data=command)
-            set_mode("default")
-            return True
+            if mode == "default":
+                set_selector(params["filter"][0][1:-1])
+                command = fzf_options.enter_filter_mode(selector, server_port)
+                post_to_localhost(get_fzf_api_url(), data=command)
+                set_mode("filter")
+                return True
+            elif mode == "filter":
+                selected = params["filter"][0][1:-1]
+                command = fzf_options.enter_default_mode(
+                    selector, selected, server_port
+                )
+                post_to_localhost(get_fzf_api_url(), data=command)
+                set_mode("default")
+                return True
+            else:
+                return False
         elif "get_input" in params:
             if params["get_input"][0] == "json":
                 self.send_response(200)
