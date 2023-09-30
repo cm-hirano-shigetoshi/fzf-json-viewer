@@ -152,6 +152,7 @@ def enter_filter_mode(selector, server_port):
         f"change-prompt({selector}> )",
         f"change-preview({preview})",
         "clear-query",
+        "first",
     ]
     return "+".join(actions)
 
@@ -164,5 +165,6 @@ def enter_default_mode(selector, selected, server_port):
         "change-prompt(DEFAULT> )",
         f"change-preview({preview})",
         "clear-query",
+        "first",
     ]
     return "+".join(actions)
