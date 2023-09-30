@@ -17,6 +17,9 @@ def execute_fzf(keys, server_port, fzf_port):
         "fzf",
         "--listen",
         str(fzf_port),
+        "--print-query",
+        "--expect",
+        "enter",
     ]
     cmd += fzf_options.get_default_mode_options(server_port)
 
@@ -44,7 +47,7 @@ def main(args, options):
     stdout = execute_fzf(keys, server_port, fzf_port)
 
     if len(stdout.strip()) > 0:
-        args = stdout.rstrip().split("\n")
+        args = stdout.rstrip().split("\n")[2:]
         input_json = internal_server.get_input_json_from_memory()
         print(fzf_options.get_selected_part_text(input_json, args))
 
