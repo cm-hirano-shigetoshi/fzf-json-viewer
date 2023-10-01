@@ -84,7 +84,7 @@ def make_query(pos, args):
     return jq_command
 
 
-def get_selected_part_text(input_json, items):
+def get_selected_part_text(input_json, items, clipboard=False):
     arg_list = [x.split("|") for x in items]
     if len(items) == 1:
         pos = -1
@@ -92,8 +92,12 @@ def get_selected_part_text(input_json, items):
         pos = common_prefix_length(arg_list)
     jq_command = make_query(pos, arg_list)
 
-    cmd = ["jq", "-c", jq_command]
-    proc = subprocess.run(cmd, input=json.dumps(input_json), stdout=PIPE, text=True)
+    if clipboard:
+        cmd = f"jq -c '{jq_command}' | tee | pbcopy"
+        proc = subprocess.run(cmd, input=json.dumps(input_json), shell=True, stdout=PIPE, text=True)
+    else:
+        cmd = ["jq", "-c", jq_command]
+        proc = subprocess.run(cmd, input=json.dumps(input_json), stdout=PIPE, text=True)
     return proc.stdout.rstrip()
 
 

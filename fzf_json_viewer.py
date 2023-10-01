@@ -20,6 +20,8 @@ def execute_fzf(keys, server_port, fzf_port):
         "--print-query",
         "--expect",
         "enter",
+        "--bind",
+        "alt-c:execute-silent(echo {} | tr -d '\n' | pbcopy)",
     ]
     cmd += fzf_options.get_default_mode_options(server_port)
 
@@ -49,7 +51,8 @@ def main(args, options):
     if len(stdout.strip()) > 0:
         args = stdout.rstrip().split("\n")[2:]
         input_json = internal_server.get_input_json_from_memory()
-        print(fzf_options.get_selected_part_text(input_json, args))
+        output = fzf_options.get_selected_part_text(input_json, args, clipboard=True)
+        print(output)
 
 
 if __name__ == "__main__":
