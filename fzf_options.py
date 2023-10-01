@@ -94,7 +94,9 @@ def get_selected_part_text(input_json, items, clipboard=False):
 
     if clipboard:
         cmd = f"jq -c '{jq_command}' | tee | pbcopy"
-        proc = subprocess.run(cmd, input=json.dumps(input_json), shell=True, stdout=PIPE, text=True)
+        proc = subprocess.run(
+            cmd, input=json.dumps(input_json), shell=True, stdout=PIPE, text=True
+        )
     else:
         cmd = ["jq", "-c", jq_command]
         proc = subprocess.run(cmd, input=json.dumps(input_json), stdout=PIPE, text=True)
@@ -147,9 +149,7 @@ def get_default_mode_options(server_port):
 
 
 def enter_filter_mode(selector, server_port):
-    reload_cmd = (
-        f"curl \"http://localhost:{server_port}?get_input=json\" | jq -r '{selector}'"
-    )
+    reload_cmd = f"curl \"http://localhost:{server_port}?get_input=json\" | jq -r '{selector}' | sort -u"
     preview = get_filtered_preview_command(selector, server_port)
     actions = [
         f"reload({reload_cmd})",
