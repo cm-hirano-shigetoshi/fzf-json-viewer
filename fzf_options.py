@@ -1,5 +1,6 @@
 import json
 import subprocess
+import urllib.parse
 from os.path import dirname, realpath
 from subprocess import PIPE
 
@@ -162,6 +163,7 @@ def enter_filter_mode(selector, server_port):
 
 
 def enter_default_mode(selector, selected, server_port):
+    selected = urllib.parse.quote(selected)
     reload_cmd = f'curl "http://localhost:{server_port}?get_input=keys:{selected}"'
     preview = get_preview(server_port, selector=selector)
     actions = [
