@@ -13,10 +13,12 @@ import internal_server
 
 def execute_fzf(keys, server_port, fzf_port):
     key_list = fzf_options.get_key_list(keys)
+    input_text = fzf_options.get_input_text(key_list)
     cmd = [
         "fzf",
         "--listen",
         str(fzf_port),
+        "--ansi",
         "--print-query",
         "--expect",
         "enter",
@@ -25,7 +27,7 @@ def execute_fzf(keys, server_port, fzf_port):
     ]
     cmd += fzf_options.get_default_mode_options(server_port)
 
-    proc = subprocess.run(cmd, input="\n".join(key_list), stdout=PIPE, text=True)
+    proc = subprocess.run(cmd, input=input_text, stdout=PIPE, text=True)
     return proc.stdout
 
 

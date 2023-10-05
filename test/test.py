@@ -23,6 +23,17 @@ INPUT_JSON = {
 
 
 @pytest.mark.parametrize(
+    "key_list,expected",
+    [
+        (["aaa|bbb|ccc"], "aaa|bbb|\033[33mccc\033[0m"),
+    ],
+)
+def test_get_input_text(key_list, expected):
+    response = fzf_options.get_input_text(key_list)
+    assert response == expected
+
+
+@pytest.mark.parametrize(
     "lines,selector,selected,expected",
     [
         (

@@ -7,6 +7,19 @@ from subprocess import PIPE
 SCRIPT_PATH = dirname(__file__)
 
 
+def decorate(s, bold=False, color=None):
+    if not bold and not color:
+        return f"\033[33m{s}\033[0m"
+    # Unsupported
+    return s
+
+
+def get_input_text(key_list):
+    return "\n".join(
+        ["|".join(k.split("|")[:-1] + [decorate(k.split("|")[-1])]) for k in key_list]
+    )
+
+
 def get_select_condition_list(lines, selector, selected):
     def _rindex(ls, s):
         return len(ls) - ls[::-1].index(s) - 1

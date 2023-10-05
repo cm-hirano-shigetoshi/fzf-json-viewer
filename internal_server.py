@@ -78,14 +78,14 @@ class RequestHandler(BaseHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header("Content-type", "text/html")
                 self.end_headers()
-                message = "\n".join(
+                input_text = fzf_options.get_input_text(
                     fzf_options.get_key_list(
                         fzf_options.get_select_condition_list(
                             fzf_options.collect_keys(input_json), selector, selected
                         )
                     )
                 )
-                self.wfile.write(bytes(message, "utf8"))
+                self.wfile.write(bytes(input_text, "utf8"))
             succeeded = False
         else:
             succeeded = False
