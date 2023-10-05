@@ -11,9 +11,7 @@ import fzf_options
 import internal_server
 
 
-def execute_fzf(keys, server_port, fzf_port):
-    key_list = fzf_options.get_key_list(keys)
-    input_text = fzf_options.get_input_text(key_list)
+def execute_fzf(input_text, server_port, fzf_port):
     cmd = [
         "fzf",
         "--listen",
@@ -37,18 +35,31 @@ def find_available_port():
 
 
 def main(args, options):
-    input_json = json.loads(sys.stdin.read())
-    if isinstance(input_json, list):
-        input_json = {"_": input_json}
-    if not options["no_aws_tags"]:
-        input_json = convert_format.optimize_aws_tags(input_json)
-    keys = fzf_options.collect_keys(input_json)
+    input_text = sys.stdin.read()
+    if input_text.lstrip()[0] == "[":
+        proc = subprocess.run(
+            "jq -c '.[]'", shell=True, input=input_text, stdout=PIPE, text=True
+        )
+        input_json = proc.stdout.rstrip()
 
-    server_port = internal_server.start_server(input_json)
-    fzf_port = find_available_port()
-    internal_server.set_fzf_port(fzf_port)
+        server_port = internal_server.start_server(input_json)
+        fzf_port = find_available_port()
+        internal_server.set_fzf_port(fzf_port)
 
-    stdout = execute_fzf(keys, server_port, fzf_port)
+        stdout = execute_fzf(input_json, server_port, fzf_port)
+    else:
+        input_json = json.loads(input_text)
+        if not options["no_aws_tags"]:
+            input_json = convert_format.optimize_aws_tags(input_json)
+        keys = fzf_options.collect_keys(input_json)
+
+        server_port = internal_server.start_server(input_json)
+        fzf_port = find_available_port()
+        internal_server.set_fzf_port(fzf_port)
+
+        key_list = fzf_options.get_key_list(keys)
+        input_text = fzf_options.get_input_text(key_list)
+        stdout = execute_fzf(input_text, server_port, fzf_port)
 
     if len(stdout.strip()) > 0:
         args = stdout.rstrip().split("\n")[2:]
