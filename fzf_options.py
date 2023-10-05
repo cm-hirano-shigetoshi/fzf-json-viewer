@@ -127,7 +127,7 @@ def get_filter_query_text(selector, specified):
 def get_filtered_json(input_json, selector, specified):
     cmd = ["jq", get_filter_query_text(selector, specified)]
     proc = subprocess.run(cmd, input=json.dumps(input_json), stdout=PIPE, text=True)
-    return json.loads(proc.stdout)
+    return proc.stdout
 
 
 def get_preview(server_port, script_dir=dirname(realpath(__file__)), selector=None):

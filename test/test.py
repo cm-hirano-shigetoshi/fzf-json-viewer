@@ -1,5 +1,6 @@
 import convert_format
 import fzf_options
+import preview
 import pytest
 
 INPUT_JSON = {
@@ -337,4 +338,17 @@ def test_get_filtered_json(input_json, selector, specified, expected):
 )
 def test_optimize_aws_tags(d, expected):
     response = convert_format.optimize_aws_tags(d)
+    assert response == expected
+
+
+@pytest.mark.parametrize(
+    "d_str,expected",
+    [
+        ("""[[{"id":"abc","status1":"true","status2":"false","status3":"false"},{"id":"def","status1":"true","status2":"false","status3":"true"},{"id":"ghi","status1":"あああ","status2":"false","status3":"false"}]]""", True),
+        ("""["abc"]\n["def"]\n["ghi"]""", False),
+        ("""["aaa[aaa"]\n["def"]\n["ghi"]""", False),
+    ],
+)
+def test_is_complex(d_str, expected):
+    response = preview.is_complex(d_str)
     assert response == expected
