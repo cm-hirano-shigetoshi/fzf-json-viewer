@@ -1,3 +1,5 @@
+import json
+
 import convert_format
 import fzf_options
 import preview
@@ -26,7 +28,7 @@ INPUT_JSON = {
 @pytest.mark.parametrize(
     "key_list,expected",
     [
-        (["aaa|bbb|ccc"], "aaa|bbb|\033[33mccc\033[0m"),
+        (["aaa|.[]|bbb|ccc"], "\033[31maaa\033[0m|.[]|\033[32mbbb|\033[1mccc\033[0m"),
     ],
 )
 def test_get_input_text(key_list, expected):
@@ -299,7 +301,9 @@ def test_get_filter_query(selector, specified, expected):
     ],
 )
 def test_get_filtered_json(input_json, selector, specified, expected):
-    response = fzf_options.get_filtered_json(input_json, selector, specified)
+    response = json.loads(
+        fzf_options.get_filtered_json(input_json, selector, specified)
+    )
     assert response == expected
 
 
@@ -344,7 +348,10 @@ def test_optimize_aws_tags(d, expected):
 @pytest.mark.parametrize(
     "d_str,expected",
     [
-        ("""[[{"id":"abc","status1":"true","status2":"false","status3":"false"},{"id":"def","status1":"true","status2":"false","status3":"true"},{"id":"ghi","status1":"あああ","status2":"false","status3":"false"}]]""", True),
+        (
+            """[[{"id":"abc","status1":"true","status2":"false","status3":"false"},{"id":"def","status1":"true","status2":"false","status3":"true"},{"id":"ghi","status1":"あああ","status2":"false","status3":"false"}]]""",
+            True,
+        ),
         ("""["abc"]\n["def"]\n["ghi"]""", False),
         ("""["aaa[aaa"]\n["def"]\n["ghi"]""", False),
     ],

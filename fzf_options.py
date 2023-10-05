@@ -7,17 +7,17 @@ from subprocess import PIPE
 SCRIPT_PATH = dirname(__file__)
 
 
-def decorate(s, bold=False, color=None):
-    if not bold and not color:
-        return f"\033[33m{s}\033[0m"
-    # Unsupported
-    return s
+def decorate_selector(s):
+    elements = []
+    for i, e in enumerate(s.split("|.[]|"), start=1):
+        elements.append(f"\033[{30+i}m{e}\033[0m")
+    sp = elements[-1].split("|")
+    elements[-1] = "|".join(sp[:-1] + ["\033[1m" + sp[-1]])
+    return "|.[]|".join(elements)
 
 
 def get_input_text(key_list):
-    return "\n".join(
-        ["|".join(k.split("|")[:-1] + [decorate(k.split("|")[-1])]) for k in key_list]
-    )
+    return "\n".join([decorate_selector(k) for k in key_list])
 
 
 def get_select_condition_list(lines, selector, selected):
