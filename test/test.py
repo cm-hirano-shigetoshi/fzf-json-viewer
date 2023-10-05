@@ -206,6 +206,26 @@ def test_common_prefix_length_3(a, b, c, expected):
 
 
 @pytest.mark.parametrize(
+    "pos,a,expected",
+    [
+        (
+            0,
+            [".top"],
+            ".top",
+        ),
+        (
+            0,
+            [".top", ".[]", ".key1"],
+            ".top|.[]|.key1",
+        ),
+    ],
+)
+def test_make_query_1(pos, a, expected):
+    response = fzf_options.make_query(pos, [a])
+    assert response == expected
+
+
+@pytest.mark.parametrize(
     "pos,a,b,expected",
     [
         (
@@ -250,7 +270,7 @@ def test_make_query_3(pos, a, b, c, expected):
         (
             INPUT_JSON,
             [".top|.[]|.key1"],
-            '["value11"]\n["value12"]',
+            '"value11"\n"value12"',
         ),
         (
             INPUT_JSON,

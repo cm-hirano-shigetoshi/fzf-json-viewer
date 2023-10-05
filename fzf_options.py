@@ -87,6 +87,8 @@ def common_prefix_length(args):
 
 
 def make_query(pos, args):
+    if len(args) == 1:
+        return "|".join(args[0])
     common = "|".join(args[0][:pos])
     array = []
     for a in args:
