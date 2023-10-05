@@ -4,12 +4,12 @@ def optimize_aws_tags(data):
         new_dict = {}
         for key, value in data.items():
             # We target the 'Tags' key specifically
-            if key == 'Tags' and isinstance(value, list):
+            if key == "Tags" and isinstance(value, list):
                 tag_dict = {}
                 for item in value:
                     # The value should be a dict with 'Key' and 'Value'
-                    if isinstance(item, dict) and 'Key' in item and 'Value' in item:
-                        tag_dict[item['Key']] = item['Value']
+                    if isinstance(item, dict) and "Key" in item and "Value" in item:
+                        tag_dict[item["Key"]] = item["Value"]
                     else:
                         # If not in the expected format, return the original data without changes
                         return data
