@@ -110,7 +110,12 @@ def test_get_select_condition_list(lines, selector, selected, expected):
                     {"key1": "value12", "key2": "value22"},
                 ]
             },
-            [[".top"], [".top", ".[]", ".key1"], [".top", ".[]", ".key2"]],
+            [
+                ["."],
+                [".top"],
+                [".top", ".[]", ".key1"],
+                [".top", ".[]", ".key2"],
+            ],
         ),
         (
             {
@@ -132,6 +137,7 @@ def test_get_select_condition_list(lines, selector, selected, expected):
                 ]
             },
             [
+                ["."],
                 [".top"],
                 [".top", ".[]", ".key1"],
                 [".top", ".[]", ".key2"],

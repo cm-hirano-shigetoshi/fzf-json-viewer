@@ -46,19 +46,24 @@ def get_select_condition_list(lines, selector, selected):
     return [_make_query(line, selector, selected) for line in lines]
 
 
-def collect_keys(json, prefix=None):
-    keys = []
-    for key, value in json.items():
-        key_with_prefix = prefix + [f".{key}"] if prefix else [f".{key}"]
-        keys.append(key_with_prefix)
-        if isinstance(value, dict):
-            keys.extend(collect_keys(value, key_with_prefix))
-        elif isinstance(value, list) and value:
-            # For lists, consider the first item alone as per the request.
-            if isinstance(value[0], dict):
-                # If the first item is a dictionary, recurse with an updated prefix.
-                keys.extend(collect_keys(value[0], prefix=key_with_prefix + [".[]"]))
-    return keys
+def collect_keys(json):
+    def _collect_keys(json, prefix=None):
+        keys = []
+        for key, value in json.items():
+            key_with_prefix = prefix + [f".{key}"] if prefix else [f".{key}"]
+            keys.append(key_with_prefix)
+            if isinstance(value, dict):
+                keys.extend(_collect_keys(value, key_with_prefix))
+            elif isinstance(value, list) and value:
+                # For lists, consider the first item alone as per the request.
+                if isinstance(value[0], dict):
+                    # If the first item is a dictionary, recurse with an updated prefix.
+                    keys.extend(
+                        _collect_keys(value[0], prefix=key_with_prefix + [".[]"])
+                    )
+        return keys
+
+    return [["."]] + _collect_keys(json)
 
 
 def get_key_list(keys):
