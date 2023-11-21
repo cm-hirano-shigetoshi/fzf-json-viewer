@@ -2,7 +2,6 @@ import json
 import subprocess
 import sys
 from dataclasses import dataclass, field
-from os.path import dirname
 from subprocess import PIPE
 
 from control_server import ControlServer
@@ -31,13 +30,54 @@ def _get_src_list(input_json):
     return [["."]] + _collect_keys(input_json)
 
 
+def _optimize_aws_tags(data):
+    # If the data is a dict, we can apply our optimization
+    if isinstance(data, dict):
+        new_dict = {}
+        for key, value in data.items():
+            # We target the 'Tags' key specifically
+            if key == "Tags" and isinstance(value, list):
+                tag_dict = {}
+                for item in value:
+                    # The value should be a dict with 'Key' and 'Value'
+                    if isinstance(item, dict) and "Key" in item and "Value" in item:
+                        tag_dict[item["Key"]] = item["Value"]
+                    else:
+                        # If not in the expected format, return the original data without changes
+                        return data
+                new_dict[key] = tag_dict
+            else:
+                # For all other keys, we keep their values, potentially optimized if they're dicts too
+                new_dict[key] = _optimize_aws_tags(value)
+        # The new dict has been fully constructed and is returned
+        return new_dict
+    # If the data is a list, we apply our function to all its elements and return a new list
+    elif isinstance(data, list):
+        return [_optimize_aws_tags(i) for i in data]
+    else:
+        # If the data is neither a dict nor a list, we can't do anything with it and return it as it is
+        return data
+
+
+def _decorate_selector(s):
+    elements = []
+    for i, e in enumerate(s.split("|.[]|"), start=1):
+        elements.append(f"\033[{30+i}m{e}\033[0m")
+    sp = elements[-1].split("|")
+    elements[-1] = "|".join(sp[:-1] + ["\033[1m" + sp[-1]])
+    return "|.[]|".join(elements)
+
+
 @dataclass
 class FzfSelectKeys(FzfTask):
     input_json: dict
+    optimize_aws_tags: bool = True
     server: ControlServer = field(default=None)
     options: dict = field(default_factory=dict)
 
     def __post_init__(self):
+        if self.optimize_aws_tags:
+            self.input_json = _optimize_aws_tags(self.input_json)
         self.options = {
             "--multi": True,
             "--ansi": True,
@@ -48,7 +88,9 @@ class FzfSelectKeys(FzfTask):
         }
 
     def get_src_list(self):
-        return ["|".join(x) for x in _get_src_list(self.input_json)]
+        src_list = _get_src_list(self.input_json)
+        selectors = ["|".join(x) for x in src_list]
+        return [_decorate_selector(selector) for selector in selectors]
 
     def get_preview_cmd(self):
         return f"{PYTHON} {__file__} 'selected' {self.server.port} {{+}}"

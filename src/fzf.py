@@ -3,13 +3,6 @@ from dataclasses import dataclass, field
 from subprocess import PIPE
 
 
-def _get_listen(server_port):
-    if server_port <= 0:
-        return []
-    else:
-        return ["--listen", str(server_port)]
-
-
 def _get_cmd_list_from_options(options):
     ls = []
     for k, v in options.items():
@@ -22,12 +15,12 @@ def _get_cmd_list_from_options(options):
 
 
 @dataclass
-class FzfTask():
+class FzfTask:
     pass
 
 
 @dataclass
-class Fzf():
+class Fzf:
     task: FzfTask
 
     def async_start_with_list(self, ls):

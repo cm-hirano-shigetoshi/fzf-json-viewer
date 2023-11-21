@@ -7,19 +7,18 @@ from control_server import ControlServer
 from fzf import Fzf
 from fzf_task import FzfSelectKeys
 
-# import convert_format
-# import fzf_options
-# import internal_server
-
 
 def run(input_text, options):
-    input_json = json.loads(input_text)
     control_server = ControlServer()
-    fzf_task = FzfSelectKeys(server=control_server, input_json=input_json)
+    fzf_task = FzfSelectKeys(
+        input_json=json.loads(input_text),
+        optimize_aws_tags=not (options["no_aws_tags"]),
+        server=control_server,
+    )
     fzf = Fzf(fzf_task)
     src_list = fzf_task.get_src_list()
     proc = fzf.async_start_with_list(src_list)
-    control_server.start(input_json)
+    control_server.start(fzf_task.input_json)
     stdout, _ = proc.communicate()
     return stdout
 
