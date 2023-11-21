@@ -49,6 +49,20 @@ import src.fzf_task
                 [".top", ".[]", ".key5"],
             ],
         ),
+        (
+            {
+                "top": [
+                    {"key:1": "value11", "key2": "value21"},
+                    {"key:1": "value12", "key2": "value22"},
+                ]
+            },
+            [
+                ["."],
+                [".top"],
+                [".top", ".[]", "\".key:1\""],
+                [".top", ".[]", ".key2"],
+            ],
+        ),
     ],
 )
 def test_get_src_list(j, expected):

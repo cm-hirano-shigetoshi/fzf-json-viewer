@@ -11,16 +11,23 @@ PYTHON = "python"
 
 
 def _get_src_list(input_json):
+    def quote(s):
+        if ":" in s:
+            return f'"{s}"'
+        else:
+            return s
+
     def _collect_keys(json, prefix=None):
         keys = []
         for key, value in json.items():
-            key_with_prefix = prefix + [f".{key}"] if prefix else [f".{key}"]
+            k = quote(f".{key}")
+            key_with_prefix = prefix + [k] if prefix else [k]
             keys.append(key_with_prefix)
             if isinstance(value, dict):
                 keys.extend(_collect_keys(value, key_with_prefix))
             elif isinstance(value, list) and value:
                 # For lists, consider the first item alone as per the request.
-                if isinstance(value[0], dict):
+                if isinstance((value[0]), dict):
                     # If the first item is a dictionary, recurse with an updated prefix.
                     keys.extend(
                         _collect_keys(value[0], prefix=key_with_prefix + [".[]"])
