@@ -12,7 +12,7 @@ def run(input_text, options):
     control_server = ControlServer()
     fzf_task = FzfSelectKeys(
         input_json=json.loads(input_text),
-        optimize_aws_tags=not (options["no_aws_tags"]),
+        optimize_aws_tags=options["optimize_aws_tags"],
         server=control_server,
     )
     fzf = Fzf(fzf_task)
@@ -30,6 +30,6 @@ def main(args, options):
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
-    p.add_argument("--no_aws_tags", action="store_true")
+    p.add_argument("--optimize_aws_tags", action="store_false")
     args = p.parse_args()
     main(sys.argv, args.__dict__)
